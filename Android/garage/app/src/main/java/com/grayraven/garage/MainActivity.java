@@ -41,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
             client.setTimeToWait(3000);
             client.connect();
             client.subscribe(topic);
-  //          token.waitForCompletion(5000);
         } catch (MqttSecurityException e) {
             e.printStackTrace();
         } catch (MqttException e) {
