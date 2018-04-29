@@ -24,6 +24,7 @@ GPIO.setup(GPIO_ECHO, GPIO.IN)
 
 def sendDistance(dist):
 	dist = dist * 0.3937
+	round(dist,2)
 	msg = "distance: " + str(dist) + " inches"
 	print("mqtt publishes: " + msg)
 	publish.single(MQTT_PATH, msg, hostname=MQTT_SERVER)
@@ -56,7 +57,6 @@ def distance():
 	# multiply with the sonic speed (34300 cm/s)
 	# and divide by 2, because there and back
 	distance = (TimeElapsed * 34300) / 2
-	
 
 	return distance
 
