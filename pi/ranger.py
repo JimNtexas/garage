@@ -24,8 +24,7 @@ GPIO.setup(GPIO_ECHO, GPIO.IN)
 
 def sendDistance(dist):
 	dist = dist * 0.3937
-	round(dist,2)
-	msg = "distance: " + str(dist) + " inches"
+	msg = "distance: " + str(round(dist,2)) + " inches"
 	print("mqtt publishes: " + msg)
 	publish.single(MQTT_PATH, msg, hostname=MQTT_SERVER)
 	print ('Published:' + msg)
