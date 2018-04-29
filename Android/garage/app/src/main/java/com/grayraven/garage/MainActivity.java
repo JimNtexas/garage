@@ -1,6 +1,7 @@
 package com.grayraven.garage;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -108,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         main_text = (TextView)findViewById(R.id.main_text);
         //main_text.setText("");
         main_layout = (View)findViewById(R.id.main_layout);
-
+        main_text.setTextColor(Color.WHITE);
         switch(status) {
             case STATUS_TIMEOUT:
                 main_layout.setBackgroundColor(getResources().getColor(R.color.red));
@@ -117,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
             case STATUS_UNKNOWN:
                 main_layout.setBackgroundColor(getResources().getColor(R.color.yellow));
+                main_text.setTextColor(getResources().getColor(R.color.darkText));
                 main_text.setText("DOOR STATUS UNKNOWN");
                 break;
 

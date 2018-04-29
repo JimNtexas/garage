@@ -7,4 +7,5 @@
     <color name="yellow">#ffff00</color>
     <color name="green">#00ff00</color>
     <color name="blue">#90caf9</color>
+    <color name="darkText">#718792</color>
 </resources>
