@@ -27,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int STATUS_ERROR = 0;
     private static final int STATUS_DOOR_CLOSED = 1;
     private static final int STATUS_DOOR_OPEN = 2;
+    private static final int STATUS_TIMEOUT = 3;
+
     private final int STATUS = STATUS_UNKNOWN;
 
     @Override
@@ -87,11 +89,12 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "GarageMqttMessage msg: " + garageMqttMessage.msg);
         String msg = garageMqttMessage.msg.toString();
         float distance = Float.parseFloat(msg);
-        if(distance > 18) {
+        if (distance > 18) {
             SetDisplayMode(STATUS_DOOR_OPEN, "");
-        } else if(distance > 5 && distance <= 18)
-        {
-            SetDisplayMode(STATUS_DOOR_CLOSED,"");
+        } else if (distance > 5 && distance <= 18) {
+            SetDisplayMode(STATUS_DOOR_CLOSED, "");
+        } else if (distance == -200) {
+            SetDisplayMode(STATUS_TIMEOUT, "timeout"); //todo: define -200 with a symbol
         } else if (distance < 5) {
             SetDisplayMode(STATUS_ERROR, garageMqttMessage.msg.toString());
         }
@@ -107,9 +110,14 @@ public class MainActivity extends AppCompatActivity {
         main_layout = (View)findViewById(R.id.main_layout);
 
         switch(status) {
+            case STATUS_TIMEOUT:
+                main_layout.setBackgroundColor(getResources().getColor(R.color.red));
+                main_text.setText("LOST CONTACT WITH DOOR");
+                break;
+
             case STATUS_UNKNOWN:
                 main_layout.setBackgroundColor(getResources().getColor(R.color.yellow));
-                main_text.setText("UNKNOWN");
+                main_text.setText("DOOR STATUS UNKNOWN");
                 break;
 
             case STATUS_DOOR_OPEN:
