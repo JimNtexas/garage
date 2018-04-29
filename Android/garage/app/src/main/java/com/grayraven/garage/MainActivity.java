@@ -14,24 +14,27 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 
 public class MainActivity extends AppCompatActivity {
 
     final String TAG = "Garage_Main";
     private static Context mContext = GarageApp.getAppContext();
-    private TextView main_text;
-    View main_layout;
+    private static final int STATUS_UNKNOWN = -1;
+    private static final int STATUS_ERROR = 0;
+    private static final int STATUS_DOOR_CLOSED = 1;
+    private static final int STATUS_DOOR_OPEN = 2;
+    private final int STATUS = STATUS_UNKNOWN;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this.getApplicationContext();
-        setContentView(R.layout.activity_main);
-        main_text = (TextView)findViewById(R.id.main_text);
-        main_text.setText("waiting for message");
-        main_layout = (View)findViewById(R.id.main_layout);
-        main_layout.setBackgroundColor(getResources().getColor(R.color.yellow));
+        SetDisplayMode(STATUS_UNKNOWN, "initializing");
+
     }
 
     final String broker = "tcp://10.211.1.127";
@@ -39,14 +42,8 @@ public class MainActivity extends AppCompatActivity {
     String username = "pi";
     final String topic = "door_distance";
 
-
-
     MqttClient client;
     IMqttToken token;
-
-
-
-
 
     String clientId = MqttAsyncClient.generateClientId();
     {
@@ -85,8 +82,65 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessageEvent(GarageMqttMessage garageMqttMessage) {
+        Log.d(TAG, "GarageMqttMessage msg: " + garageMqttMessage.msg);
+        String msg = garageMqttMessage.msg.toString();
+        float distance = Float.parseFloat(msg);
+        if(distance > 18) {
+            SetDisplayMode(STATUS_DOOR_OPEN, "");
+        } else if(distance > 5 && distance <= 18)
+        {
+            SetDisplayMode(STATUS_DOOR_CLOSED,"");
+        } else if (distance < 5) {
+            SetDisplayMode(STATUS_ERROR, garageMqttMessage.msg.toString());
+        }
+
+    }
+
+    private void SetDisplayMode(int status, String reason){
+        TextView main_text;
+        View main_layout;
+        setContentView(R.layout.activity_main);
+        main_text = (TextView)findViewById(R.id.main_text);
+        //main_text.setText("");
+        main_layout = (View)findViewById(R.id.main_layout);
+
+        switch(status) {
+            case STATUS_UNKNOWN:
+                main_layout.setBackgroundColor(getResources().getColor(R.color.yellow));
+                main_text.setText("UNKNOWN");
+                break;
+
+            case STATUS_DOOR_OPEN:
+                main_layout.setBackgroundColor(getResources().getColor(R.color.blue));
+                main_text.setText("DOOR OPEN");
+                break;
+
+            case STATUS_DOOR_CLOSED:
+                main_layout.setBackgroundColor(getResources().getColor(R.color.green));
+                main_text.setText("DOOR CLOSED");
+                break;
+
+            case STATUS_ERROR:
+                main_layout.setBackgroundColor((getResources().getColor(R.color.red)));
+                main_text.setText("SYSTEM ERROR");
+        }
+
+    }
 
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
 
 }
 

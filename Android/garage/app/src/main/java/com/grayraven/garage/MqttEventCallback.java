@@ -6,12 +6,12 @@ import android.util.Log;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-
+import org.greenrobot.eventbus.EventBus;
 
 
 public class MqttEventCallback implements MqttCallback {
 
-    final String TAG = "EventCallback";
+    final String TAG = "MqttEventCallback";
 
     @Override
     public void connectionLost(Throwable arg0) {
@@ -27,7 +27,10 @@ public class MqttEventCallback implements MqttCallback {
     @Override
     @SuppressLint("NewApi")
     public void messageArrived(String topic, final MqttMessage msg) throws Exception {
-        Log.i(TAG, "Message arrived from topic" + topic);
+      //  Log.i(TAG, "Message arrived from topic" + topic);
+
+        GarageMqttMessage garageMsg = new GarageMqttMessage(topic, msg.toString());
+        EventBus.getDefault().post(garageMsg);
 
     }
 }
