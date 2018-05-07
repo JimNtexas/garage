@@ -90,13 +90,13 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "GarageMqttMessage msg: " + garageMqttMessage.msg);
         String msg = garageMqttMessage.msg.toString();
         float distance = Float.parseFloat(msg);
-        if (distance > 18) {
-            SetDisplayMode(STATUS_DOOR_OPEN, "");
-        } else if (distance > 5 && distance <= 18) {
-            SetDisplayMode(STATUS_DOOR_CLOSED, "");
+        if (distance > 13.5) {
+                SetDisplayMode(STATUS_DOOR_CLOSED, "");
+        } else if (distance < 13.5 ) {
+                SetDisplayMode(STATUS_DOOR_OPEN, "");
         } else if (distance == -200) {
             SetDisplayMode(STATUS_TIMEOUT, "timeout"); //todo: define -200 with a symbol
-        } else if (distance < 5) {
+        } else if (distance < 8) {
             SetDisplayMode(STATUS_ERROR, garageMqttMessage.msg.toString());
         }
 
