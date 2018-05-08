@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         float distance = Float.parseFloat(msg);
         if (distance > 13.5) {
                 SetDisplayMode(STATUS_DOOR_CLOSED, "");
-        } else if (distance < 13.5 ) {
+        } else if (distance < 13.5 && distance >= 0 ) {
                 SetDisplayMode(STATUS_DOOR_OPEN, "");
         } else if (distance == -200) {
             SetDisplayMode(STATUS_TIMEOUT, "timeout"); //todo: define -200 with a symbol
@@ -112,22 +112,26 @@ public class MainActivity extends AppCompatActivity {
         main_text.setTextColor(Color.WHITE);
         switch(status) {
             case STATUS_TIMEOUT:
+                Log.d(TAG, "status timeout");
                 main_layout.setBackgroundColor(getResources().getColor(R.color.red));
                 main_text.setText("LOST CONTACT WITH DOOR");
                 break;
 
             case STATUS_UNKNOWN:
+                Log.d(TAG, "STATUS_UNKNOWN");
                 main_layout.setBackgroundColor(getResources().getColor(R.color.yellow));
                 main_text.setTextColor(getResources().getColor(R.color.darkText));
                 main_text.setText("DOOR STATUS UNKNOWN");
                 break;
 
             case STATUS_DOOR_OPEN:
+                Log.d(TAG, "STATUS_DOOR_OPEN");
                 main_layout.setBackgroundColor(getResources().getColor(R.color.blue));
                 main_text.setText("DOOR OPEN");
                 break;
 
             case STATUS_DOOR_CLOSED:
+                Log.d(TAG, "STATUS_DOOR_CLOSED");
                 main_layout.setBackgroundColor(getResources().getColor(R.color.green));
                 main_text.setText("DOOR CLOSED");
                 break;
