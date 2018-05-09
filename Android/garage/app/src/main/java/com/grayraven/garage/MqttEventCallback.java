@@ -9,7 +9,6 @@ import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.greenrobot.eventbus.EventBus;
 
-
 public class MqttEventCallback implements MqttCallback {
 
     final String TAG = "Garage_MqttEventCb";
