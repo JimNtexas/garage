@@ -1,0 +1,11 @@
+[Unit]
+Description=Garage Door Monitor
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python /hiome/pi/ranger.python
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target

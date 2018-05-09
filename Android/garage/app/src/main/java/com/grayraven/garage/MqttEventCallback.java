@@ -12,7 +12,7 @@ import org.greenrobot.eventbus.EventBus;
 
 public class MqttEventCallback implements MqttCallback {
 
-    final String TAG = "MqttEventCallback";
+    final String TAG = "Garage_MqttEventCb";
     private CountDownTimer timer = new CountDownTimer(3000, 1000) {
 
         public void onTick(long millisUntilFinished) {
@@ -37,6 +37,7 @@ public class MqttEventCallback implements MqttCallback {
 
     @Override
     public void deliveryComplete(IMqttDeliveryToken arg0) {
+
         Log.i(TAG, "deliveryComplete" );
     }
 

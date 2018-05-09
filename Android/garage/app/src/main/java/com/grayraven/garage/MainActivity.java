@@ -11,7 +11,6 @@ import android.widget.TextView;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
@@ -37,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         mContext = this.getApplicationContext();
         SetDisplayMode(STATUS_UNKNOWN, "initializing");
+        RestartMQTT(3000);
 
     }
 
@@ -48,39 +48,44 @@ public class MainActivity extends AppCompatActivity {
     MqttClient client;
     IMqttToken token;
 
-    String clientId = MqttAsyncClient.generateClientId();
-    {
-        MqttConnectOptions connectOptions = new MqttConnectOptions();
-        connectOptions.setPassword(password.toCharArray());
-        connectOptions.setUserName(username);
-        try {
+    void RestartMQTT (int delay) {  //connection delay in milliseconds
 
+        Log.d(TAG, "RestartMQTT");
 
-            MemoryPersistence persistence = new MemoryPersistence();
-            client = new MqttClient(broker, clientId, persistence);
-            client.setCallback(new MqttEventCallback());
-            client.setTimeToWait(3000);
-            client.connect(/*connectOptions*/);
-            client.subscribe(topic);
-        } catch (MqttSecurityException e) {
-            e.printStackTrace();
-        } catch (MqttException e) {
-            e.printStackTrace();
-            switch (e.getReasonCode()) {
-                case MqttException.REASON_CODE_BROKER_UNAVAILABLE:
-                case MqttException.REASON_CODE_CLIENT_TIMEOUT:
-                case MqttException.REASON_CODE_CONNECTION_LOST:
-                case MqttException.REASON_CODE_SERVER_CONNECT_ERROR:
-                    Log.d(TAG, "c" + e.getMessage());
-                    e.printStackTrace();
-                    break;
-                case MqttException.REASON_CODE_FAILED_AUTHENTICATION:
-                   Log.d(TAG, "REASON_CODE_FAILED_AUTHENTICATION");
-                    Log.d(TAG, "b" + e.getMessage());
-                    break;
-                default:
-                    Log.d(TAG, "default exception cause: " + e.getReasonCode() + " cause: " + e.getCause());
-                    Log.d(TAG, "a" + e.getMessage());
+        String clientId = MqttAsyncClient.generateClientId();
+        {
+            /* not yet required since we don't change the state of anything in the real world
+            MqttConnectOptions connectOptions = new MqttConnectOptions();
+            connectOptions.setPassword(password.toCharArray());
+            connectOptions.setUserName(username); */
+
+            try {
+                MemoryPersistence persistence = new MemoryPersistence();
+                client = new MqttClient(broker, clientId, persistence);
+                client.setCallback(new MqttEventCallback());
+                client.setTimeToWait(delay);
+                client.connect(/*connectOptions*/);
+                client.subscribe(topic);
+            } catch (MqttSecurityException e) {
+                e.printStackTrace();
+            } catch (MqttException e) {
+                e.printStackTrace();
+                switch (e.getReasonCode()) {
+                    case MqttException.REASON_CODE_BROKER_UNAVAILABLE:
+                    case MqttException.REASON_CODE_CLIENT_TIMEOUT:
+                    case MqttException.REASON_CODE_CONNECTION_LOST:
+                    case MqttException.REASON_CODE_SERVER_CONNECT_ERROR:
+                        Log.d(TAG, "exception: " + e.getMessage());
+                        e.printStackTrace();
+                        break;
+                    case MqttException.REASON_CODE_FAILED_AUTHENTICATION:
+                        Log.d(TAG, "REASON_CODE_FAILED_AUTHENTICATION");
+                        Log.d(TAG, "exception: " + e.getMessage());
+                        break;
+                    default:
+                        Log.d(TAG, "default exception cause: " + e.getReasonCode() + " cause: " + e.getCause());
+                        Log.d(TAG, "a" + e.getMessage());
+                }
             }
         }
     }
@@ -96,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
                 SetDisplayMode(STATUS_DOOR_OPEN, "");
         } else if (distance == -200) {
             SetDisplayMode(STATUS_TIMEOUT, "timeout"); //todo: define -200 with a symbol
+            RestartMQTT(6000);
         } else if (distance < 8) {
             SetDisplayMode(STATUS_ERROR, garageMqttMessage.msg.toString());
         }
