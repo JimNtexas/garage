@@ -55,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
         String clientId = MqttAsyncClient.generateClientId();
         {
             /* not yet required since we don't change the state of anything in the real world
+            
             MqttConnectOptions connectOptions = new MqttConnectOptions();
             connectOptions.setPassword(password.toCharArray());
             connectOptions.setUserName(username); */
