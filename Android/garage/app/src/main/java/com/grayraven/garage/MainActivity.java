@@ -3,9 +3,11 @@ package com.grayraven.garage;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import org.eclipse.paho.client.mqttv3.IMqttToken;
@@ -28,16 +30,18 @@ public class MainActivity extends AppCompatActivity {
     private static final int STATUS_DOOR_CLOSED = 1;
     private static final int STATUS_DOOR_OPEN = 2;
     private static final int STATUS_TIMEOUT = 3;
-
     private final int STATUS = STATUS_UNKNOWN;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this.getApplicationContext();
-        SetDisplayMode(STATUS_UNKNOWN, "initializing");
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        int brightness = 30;
+        Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, brightness);
+        Log.d(TAG, "brightness: " + brightness);
         RestartMQTT(3000);
-
     }
 
     final String broker = "tcp://10.211.1.127";
@@ -55,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         String clientId = MqttAsyncClient.generateClientId();
         {
             /* not yet required since we don't change the state of anything in the real world
-            
+
             MqttConnectOptions connectOptions = new MqttConnectOptions();
             connectOptions.setPassword(password.toCharArray());
             connectOptions.setUserName(username); */
@@ -106,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
         } else if (distance < 8) {
             SetDisplayMode(STATUS_ERROR, garageMqttMessage.msg.toString());
         }
-
     }
 
     private void SetDisplayMode(int status, String reason){
@@ -114,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
         View main_layout;
         setContentView(R.layout.activity_main);
         main_text = (TextView)findViewById(R.id.main_text);
-        //main_text.setText("");
         main_layout = (View)findViewById(R.id.main_layout);
         main_text.setTextColor(Color.WHITE);
         switch(status) {
@@ -161,6 +163,14 @@ public class MainActivity extends AppCompatActivity {
     public void onStop() {
         super.onStop();
         EventBus.getDefault().unregister(this);
+        if(client.isConnected()) {
+            try {
+                client.disconnect();
+                client.close();
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }
