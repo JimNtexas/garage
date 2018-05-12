@@ -15,7 +15,7 @@ public class MqttEventCallback implements MqttCallback {
     private CountDownTimer timer = new CountDownTimer(3000, 1000) {
 
         public void onTick(long millisUntilFinished) {
-           Log.d(TAG, "seconds remaining: " + millisUntilFinished / 1000);
+           //Log.d(TAG, "seconds remaining: " + millisUntilFinished / 1000);
         }
 
         public void onFinish() {
