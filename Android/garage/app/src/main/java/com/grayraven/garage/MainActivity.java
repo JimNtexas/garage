@@ -3,9 +3,12 @@ package com.grayraven.garage;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import org.eclipse.paho.client.mqttv3.IMqttToken;
@@ -35,6 +38,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this.getApplicationContext();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        //int brightness = 30;
+        //Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS, brightness);
+        //Log.d(TAG, "brightness: " + brightness);
         SetDisplayMode(STATUS_UNKNOWN, "initializing");
         RestartMQTT(3000);
 
@@ -51,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     void RestartMQTT (int delay) {  //connection delay in milliseconds
 
         Log.d(TAG, "RestartMQTT");
+        MqttException lastExectption = null;
 
         String clientId = MqttAsyncClient.generateClientId();
         {
@@ -59,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
             MqttConnectOptions connectOptions = new MqttConnectOptions();
             connectOptions.setPassword(password.toCharArray());
             connectOptions.setUserName(username); */
-
             try {
                 MemoryPersistence persistence = new MemoryPersistence();
                 client = new MqttClient(broker, clientId, persistence);
@@ -69,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
                 client.subscribe(topic);
             } catch (MqttSecurityException e) {
                 e.printStackTrace();
+                lastExectption = e;
             } catch (MqttException e) {
                 e.printStackTrace();
                 switch (e.getReasonCode()) {
@@ -87,8 +95,24 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "default exception cause: " + e.getReasonCode() + " cause: " + e.getCause());
                         Log.d(TAG, "a" + e.getMessage());
                 }
-            }
+                lastExectption = e;
+            }  //end catch
+
         }
+        try {
+            if (lastExectption != null ) {
+                if(client != null && (client.isConnected())){
+                    client.disconnect();
+                }
+                client = null;
+                SetDisplayMode(STATUS_ERROR, "mqtt failure");
+                SystemClock.sleep(1500);
+                delayedRestart();
+            }
+        } catch (MqttException el){
+            Log.e(TAG, "Last exception: " + el.getMessage());
+        }
+
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -150,6 +174,18 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void delayedRestart() {
+        //note: this can cause a memory leak, but is only called in the event of an mqtt failure
+        //see https://stackoverflow.com/questions/1520887/how-to-pause-sleep-thread-or-process-in-android
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                RestartMQTT(3000);
+            }
+        }, 10000);
+
+    }
 
     @Override
     public void onStart() {
