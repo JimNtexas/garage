@@ -21,7 +21,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-
+//todo:  display error msg on view ///////////////////////////
 public class MainActivity extends AppCompatActivity {
 
     final String TAG = "Garage_Main";
@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void delayedRestart() {
-        //note: this can cause a memory leak, but is only called in the event of an mqtt failure
+        //note: this can cause a very small memory leak, but is only called in the event of an mqtt failure
         //see https://stackoverflow.com/questions/1520887/how-to-pause-sleep-thread-or-process-in-android
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
