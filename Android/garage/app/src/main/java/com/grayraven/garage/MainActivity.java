@@ -2,6 +2,8 @@ package com.grayraven.garage;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -133,9 +135,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    static int lastStatus = STATUS_UNKNOWN;
     private void SetDisplayMode(int status, String reason){
         TextView main_text;
         View main_layout;
+
         setContentView(R.layout.activity_main);
         main_text = (TextView)findViewById(R.id.main_text);
         //main_text.setText("");
@@ -172,6 +176,11 @@ public class MainActivity extends AppCompatActivity {
                 main_text.setText("SYSTEM ERROR");
         }
 
+        if(status != lastStatus) {
+            statusChange(status, lastStatus);
+        }
+        lastStatus = status;
+
     }
 
     private void delayedRestart() {
@@ -184,6 +193,28 @@ public class MainActivity extends AppCompatActivity {
                 RestartMQTT(3000);
             }
         }, 10000);
+
+    }
+
+    private void statusChange(int status, int lastStatus) {
+        if((status == STATUS_DOOR_OPEN && lastStatus != STATUS_DOOR_OPEN) || (status == STATUS_DOOR_CLOSED  && lastStatus != STATUS_DOOR_CLOSED) ) {
+            BackgroundSound sound = new BackgroundSound();
+            sound.doInBackground();
+        }
+
+    }
+
+    public class BackgroundSound extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            MediaPlayer player = MediaPlayer.create(MainActivity.this, R.raw.door_open);
+            player.setLooping(false); // Set looping
+            player.setVolume(100,100);
+            player.start();
+
+            return null;
+        }
 
     }
 
