@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessageEvent(GarageMqttMessage garageMqttMessage) {
-        Log.d(TAG, "GarageMqttMessage msg: " + garageMqttMessage.msg);
+        Log.v(TAG, "GarageMqttMessage msg: " + garageMqttMessage.msg);
         String msg = garageMqttMessage.msg.toString();
         float distance = Float.parseFloat(msg);
         if (distance > 13.5) {
@@ -160,13 +160,13 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case STATUS_DOOR_OPEN:
-                Log.d(TAG, "STATUS_DOOR_OPEN");
+                Log.v(TAG, "STATUS_DOOR_OPEN");
                 main_layout.setBackgroundColor(getResources().getColor(R.color.blue));
                 main_text.setText("DOOR OPEN");
                 break;
 
             case STATUS_DOOR_CLOSED:
-                Log.d(TAG, "STATUS_DOOR_CLOSED");
+                Log.v(TAG, "STATUS_DOOR_CLOSED");
                 main_layout.setBackgroundColor(getResources().getColor(R.color.green));
                 main_text.setText("DOOR CLOSED");
                 break;
@@ -197,20 +197,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void statusChange(int status, int lastStatus) {
+
+        BackgroundSound sound = new BackgroundSound();
+        Log.d(TAG, "status change current: " + status + " last: " + lastStatus);
+        if(status != STATUS_DOOR_CLOSED && status != STATUS_DOOR_OPEN) {
+            sound.doInBackground(true);  // play error sound
+        } else
+
         if((status == STATUS_DOOR_OPEN && lastStatus != STATUS_DOOR_OPEN) || (status == STATUS_DOOR_CLOSED  && lastStatus != STATUS_DOOR_CLOSED) ) {
-            BackgroundSound sound = new BackgroundSound();
-            sound.doInBackground();
+            sound.doInBackground(false);  // play door movement sound effect
+            Log.d(TAG, "door status now : " + (status == STATUS_DOOR_OPEN ? "DOOR OPEN" : "DOOR CLOSED") );
         }
 
     }
 
-    public class BackgroundSound extends AsyncTask<Void, Void, Void> {
+    public class BackgroundSound extends AsyncTask<Boolean, Void, Void> {
 
         @Override
-        protected Void doInBackground(Void... params) {
-            MediaPlayer player = MediaPlayer.create(MainActivity.this, R.raw.door_open);
+        protected Void doInBackground(Boolean... params) {
+            boolean isError = params[0];
+            Log.d(TAG, isError ? "playing error sound" : "playing door open sound");
+            MediaPlayer player = MediaPlayer.create(MainActivity.this, isError ? R.raw.pager : R.raw.door_open);
             player.setLooping(false); // Set looping
-            player.setVolume(100,100);
+            player.setVolume(100, 100);
             player.start();
 
             return null;
