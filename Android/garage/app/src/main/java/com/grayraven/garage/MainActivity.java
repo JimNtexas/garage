@@ -201,10 +201,11 @@ public class MainActivity extends AppCompatActivity {
         BackgroundSound sound = new BackgroundSound();
         Log.d(TAG, "status change current: " + status + " last: " + lastStatus);
         if(status != STATUS_DOOR_CLOSED && status != STATUS_DOOR_OPEN) {
-            sound.doInBackground(true);  // play error sound
+          //  sound.doInBackground(true);  // play error sound
+            Log.e(TAG, "status change ERROR, sound surpressed");
         } else
 
-        if((status == STATUS_DOOR_OPEN && lastStatus != STATUS_DOOR_OPEN) || (status == STATUS_DOOR_CLOSED  && lastStatus != STATUS_DOOR_CLOSED) ) {
+        if((status == STATUS_DOOR_OPEN && lastStatus == STATUS_DOOR_CLOSED) || (status == STATUS_DOOR_CLOSED  && lastStatus == STATUS_DOOR_OPEN) ) {
             sound.doInBackground(false);  // play door movement sound effect
             Log.d(TAG, "door status now : " + (status == STATUS_DOOR_OPEN ? "DOOR OPEN" : "DOOR CLOSED") );
         }
@@ -212,6 +213,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public class BackgroundSound extends AsyncTask<Boolean, Void, Void> {
+
 
         @Override
         protected Void doInBackground(Boolean... params) {
